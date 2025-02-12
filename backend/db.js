@@ -19,7 +19,19 @@ const userSchema = new Schema({
     password: {
         type: String,
         required: true,
-    }
+    },
+});
+
+const accountSchema = new Schema({
+    userId: {
+        type: mongoose.Types.ObjectId,
+        ref: "User",
+        required: true,
+    },
+    balance: {
+        type: Number,
+    },
 });
 
 export const User = mongoose.model("User", userSchema);
+export const Account = mongoose.model("Account", accountSchema);

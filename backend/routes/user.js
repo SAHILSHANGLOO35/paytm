@@ -1,10 +1,9 @@
 import { Router } from "express";
 import { SignupSchema, SignInSchema, updateUserSchema } from "../types/index.js";
-import { User } from "../db.js";
+import { Account, User } from "../db.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { authMiddleware } from "../middleware/index.js";
-import { parse } from "dotenv";
 
 export const userRouter = Router();
 
@@ -30,12 +29,19 @@ userRouter.post("/signup", async (req, res) => {
             });
             return;
         }
-        await User.create({
+
+        const user = await User.create({
             firstName: parsedData.data.firstName,
             lastName: parsedData.data.lastName,
             email: parsedData.data.email,
             password: hashedPassword,
         });
+
+        await Account.create({
+            userId: user._id,
+            balance: 1 + Math.random() * 1000,
+        });
+
         res.status(200).json({
             message: "User created successfully",
         });
@@ -98,7 +104,7 @@ userRouter.put("/", authMiddleware, async (req, res) => {
     if (!parsedData.success) {
         return res.status(403).json({
             message: "Error updating user",
-            errors: parsedData.error.format()
+            errors: parsedData.error.format(),
         });
     }
 
@@ -106,8 +112,8 @@ userRouter.put("/", authMiddleware, async (req, res) => {
         const hashedPassword = await bcrypt.hash(parsedData.data.password, 10);
 
         await User.updateOne(
-            {_id: req.userId},
-            {...parsedData.data, password: hashedPassword},
+            { _id: req.userId },
+            { ...parsedData.data, password: hashedPassword },
             req.body
         );
         res.status(200).json({
@@ -118,4 +124,21 @@ userRouter.put("/", authMiddleware, async (req, res) => {
             message: "Some internal error",
         });
     }
+});
+
+userRouter.get("/bulk", async (req, res) => {
+    const filter = req.query.filter || "";
+    const users = await User.find({
+        $or: [
+            { firstName: { $regex: filter, $options: "i" } },
+            { lastName: { $regex: filter, $options: "i" } },
+        ],
+    });
+    res.json({
+        user: users.map((user) => ({
+            firstName: user.firstName,
+            lastName: user.lastName,
+            _id: user._id,
+        })),
+    });
 });
