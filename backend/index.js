@@ -2,11 +2,12 @@ import express from "express";
 import mongoose from "mongoose";
 import { configDotenv } from "dotenv";
 import { router } from "./routes/index.js";
-
-configDotenv();
+import cors from "cors";
 
 const app = express();
 app.use(express.json());
+app.use(cors());
+configDotenv();
 
 app.use("/api/v1", router);
 

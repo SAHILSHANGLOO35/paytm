@@ -1,8 +1,10 @@
 import { Router } from "express";
-import { SignupSchema, SignInSchema } from "../types/index.js";
+import { SignupSchema, SignInSchema, updateUserSchema } from "../types/index.js";
 import { User } from "../db.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { authMiddleware } from "../middleware/index.js";
+import { parse } from "dotenv";
 
 export const userRouter = Router();
 
@@ -23,9 +25,10 @@ userRouter.post("/signup", async (req, res) => {
         });
 
         if (existingUser) {
-            return res.json({
+            res.json({
                 message: "User with this email already exists!",
             });
+            return;
         }
         await User.create({
             firstName: parsedData.data.firstName,
@@ -86,5 +89,33 @@ userRouter.post("/signin", async (req, res) => {
             message: "Some internal error",
         });
         return;
+    }
+});
+
+userRouter.put("/", authMiddleware, async (req, res) => {
+    const parsedData = updateUserSchema.safeParse(req.body);
+
+    if (!parsedData.success) {
+        return res.status(403).json({
+            message: "Error updating user",
+            errors: parsedData.error.format()
+        });
+    }
+
+    try {
+        const hashedPassword = await bcrypt.hash(parsedData.data.password, 10);
+
+        await User.updateOne(
+            {_id: req.userId},
+            {...parsedData.data, password: hashedPassword},
+            req.body
+        );
+        res.status(200).json({
+            message: "User updated successfully",
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Some internal error",
+        });
     }
 });
