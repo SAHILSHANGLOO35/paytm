@@ -10,7 +10,7 @@ function Signin() {
         <div className="bg-slate-300 min-h-screen flex items-center justify-center">
             <div className="bg-white px-5 py-5 rounded-lg">
                 <div className="flex flex-col items-center justify-center">
-                    <Heading label="Sign up" />
+                    <Heading label="Sign in" />
                     <SubHeading label="Enter your information to create an account" />
                     <InputBox
                         label="Email"
