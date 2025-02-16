@@ -7,7 +7,7 @@ function Dashboard() {
   return (
     <div>
       <Appbar />
-      <div >
+      <div className='ml-4 mr-4'>
         <Balance value="9,999" />
         <Users />
       </div>

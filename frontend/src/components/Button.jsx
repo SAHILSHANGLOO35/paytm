@@ -1,10 +1,13 @@
 import React from 'react'
 
-function Button({ label }) {
+function Button({ label, onClick }) {
   return (
-    <div className='cursor-pointer w-96 bg-gray-900 flex items-center justify-center p-3 text-white rounded-md font-medium text-xl mb-4 mt-2'>
-      { label }
-    </div>
+    <button 
+      className='w-96 bg-gray-900 text-white p-3 rounded-md font-medium text-xl mb-4 mt-2 hover:bg-gray-800 transition' 
+      onClick={onClick} 
+    >
+      {label}
+    </button>
   )
 }
 
