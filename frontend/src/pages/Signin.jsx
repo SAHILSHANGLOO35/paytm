@@ -37,12 +37,12 @@ function Signin() {
                         }}
                     />
                     <Button label="Sign in" onClick={async () => {
-                        await axios.post(BACKEND_URL + "/user/signin", {
+                        const response = await axios.post(BACKEND_URL + "/user/signin", {
                             email,
                             password
-                        }).then(() => {
-                            navigate("/dashboard");
-                        })
+                        });
+                        localStorage.setItem("token", response.data.token);
+                        navigate("/dashboard");
                     }} />
                     <BottomWarning
                         label="Don't have an account?"
