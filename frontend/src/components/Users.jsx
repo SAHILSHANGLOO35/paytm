@@ -1,30 +1,39 @@
-import React, { useState } from "react";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { BACKEND_URL } from "../../config";
 
 function Users() {
-    const [users, setUsers] = useState([
-        {
-            firstName: "Sahil",
-            lastName: "Shangloo",
-            _id: 1,
-        },
-        {
-            firstName: "Anuj",
-            lastName: "Gill",
-            _id: 2,
-        },
-        {
-            firstName: "Arkan",
-            lastName: "Khan",
-            _id: 3,
-        }
-    ]);
+    const [users, setUsers] = useState([]);
+    const [filter, setFilter] = useState("");
+
+    const token = localStorage.getItem("token");
+
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+
+        axios
+            .get(BACKEND_URL + "/user/bulk?filter=" + filter, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            })
+            .then((response) => {
+                setUsers(response.data.user);
+            })
+            .catch((error) => {
+                console.error("Error fetching users:", error);
+            });
+    }, [filter]);
 
     return (
         <div className="flex flex-col ml-4">
             <div className="font-bold text-xl mt-4">Users</div>
             <div className="mr-4">
                 <input
+                    onChange={(e) => {
+                        setFilter(e.target.value);
+                    }}
                     type="text"
                     placeholder="Search users..."
                     className="border p-2 rounded-md border-slate-300 w-full mt-4"
@@ -62,7 +71,7 @@ export function User({ user }) {
             <div className="flex flex-col justify-center ">
                 <button
                     className="border py-2 px-4 rounded-md bg-black text-white font-semibold mr-4"
-                    onClick={() => navigate("/send")}
+                    onClick={() => navigate("/send?id=" + user._id + "&name=" + user.firstName + " " + user.lastName)}
                 >
                     Send money
                 </button>
