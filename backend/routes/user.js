@@ -4,6 +4,7 @@ import { Account, User } from "../db.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { authMiddleware } from "../middleware/index.js";
+import mongoose from "mongoose";
 
 export const userRouter = Router();
 
@@ -126,14 +127,22 @@ userRouter.put("/", authMiddleware, async (req, res) => {
     }
 });
 
-userRouter.get("/bulk", async (req, res) => {
+userRouter.get("/bulk", authMiddleware, async (req, res) => { 
     const filter = req.query.filter || "";
+    const loggedInUserId = new mongoose.Types.ObjectId(req.userId);
+
     const users = await User.find({
-        $or: [
-            { firstName: { $regex: filter, $options: "i" } },
-            { lastName: { $regex: filter, $options: "i" } },
-        ],
+        $and: [
+            { _id: { $ne: loggedInUserId } },
+            {
+                $or: [
+                    { firstName: { $regex: filter, $options: "i" } },
+                    { lastName: { $regex: filter, $options: "i" } },
+                ],
+            }
+        ]
     });
+
     res.json({
         user: users.map((user) => ({
             firstName: user.firstName,
@@ -142,3 +151,4 @@ userRouter.get("/bulk", async (req, res) => {
         })),
     });
 });
+
